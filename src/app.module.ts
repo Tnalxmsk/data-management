@@ -6,7 +6,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
 import { UsersModel } from './users/entities/users.entity';
 import { CommonModule } from './common/common.module';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { AuthModule } from './auth/auth.module';
+import { AccessTokenGuard } from './auth/guard/bearer-token.guard';
 
 @Module({
   imports: [
@@ -26,6 +28,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     }),
     UsersModule,
     CommonModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [
@@ -33,6 +36,10 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     {
       provide: APP_INTERCEPTOR,
       useClass: ClassSerializerInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: AccessTokenGuard,
     },
   ],
 })
