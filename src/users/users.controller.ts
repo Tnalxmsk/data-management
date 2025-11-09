@@ -1,8 +1,23 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserRequestDto } from './dto/create-user-request.dto';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { UsersModel } from './entities/users.entity';
+import { GetUserInfoDto } from './dto/get-user-info.dto';
 
 @ApiTags('유저')
 @Controller('users')
@@ -21,5 +36,26 @@ export class UsersController {
   })
   postUser(@Body() createUserDto: CreateUserRequestDto) {
     return this.usersService.createUser(createUserDto);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: '유저 정보 조회' })
+  @ApiParam({ type: Number, name: 'id', required: true })
+  @ApiResponse({
+    type: GetUserInfoDto,
+  })
+  getUser(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getUser(id);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: '유저 정보 삭제' })
+  @ApiParam({ type: Number, name: 'id', required: true })
+  @ApiResponse({
+    type: Number,
+    example: '1',
+  })
+  deleteUser(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.deleteUser(id);
   }
 }
