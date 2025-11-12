@@ -1,5 +1,5 @@
 import { BaseModel } from './base.entity';
-import { Column, ManyToOne } from 'typeorm';
+import { Column, Entity, ManyToOne } from 'typeorm';
 import { IsEnum, IsString } from 'class-validator';
 import { RampsModel } from '../../ramps/entities/ramps.entity';
 import { Transform } from 'class-transformer';
@@ -9,6 +9,7 @@ export enum ImageType {
   RAMP_IMAGE,
 }
 
+@Entity()
 export class ImageModel extends BaseModel {
   @Column()
   @IsEnum(ImageType)
