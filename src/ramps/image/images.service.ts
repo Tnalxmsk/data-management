@@ -34,4 +34,9 @@ export class ImagesService {
 
     return await repository.save(images);
   }
+
+  async deleteRampImages(ramp: RampsModel, qr: QueryRunner) {
+    const repository = this.getRepository(qr);
+    await repository.delete({ ramps: { id: ramp.id } });
+  }
 }
