@@ -12,6 +12,8 @@ import { AccessTokenGuard } from './auth/guard/bearer-token.guard';
 import { RampsModule } from './ramps/ramps.module';
 import { RampsModel } from './ramps/entities/ramps.entity';
 import { ImageModel } from './common/entities/image.entity';
+import { UploadsModule } from './uploads/uploads.module';
+import { S3Module } from './s3/s3.module';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { ImageModel } from './common/entities/image.entity';
     CommonModule,
     AuthModule,
     RampsModule,
+    UploadsModule,
+    S3Module,
   ],
   controllers: [AppController],
   providers: [
