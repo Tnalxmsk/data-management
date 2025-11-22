@@ -21,7 +21,6 @@ import { ORDERABLE_KEYS } from './const/orderable-keys.const';
 import { DeleteRampDto } from './dto/delete-ramp.dto';
 import { UpdateRampDto } from './dto/update-ramp.dto';
 import { CreateRampDto } from './dto/create-ramp.dto';
-import { UsersService } from '../users/users.service';
 import { ImagesService } from './image/images.service';
 
 @Injectable()
@@ -30,7 +29,6 @@ export class RampsService {
     @InjectRepository(RampsModel)
     private readonly rampsRepository: Repository<RampsModel>,
     private readonly imagesService: ImagesService,
-    private readonly userService: UsersService,
   ) {}
 
   paginateRamps(dto: PaginateRampDto) {
@@ -94,7 +92,29 @@ export class RampsService {
     };
   }
 
-  patchRamps(id: number, body: UpdateRampDto) {}
+  async patchRamps(id: number, body: UpdateRampDto, qr?: QueryRunner) {
+    const repository = this.getRepository();
+    const ramp = await repository.findOne({
+      where: { id },
+      relations: ['images'],
+    });
+
+    if (!ramp) {
+      throw new NotFoundException('해당 경사로 데이터가 존재하지 않습니다.');
+    }
+
+    Object.assign(ramp, body);
+
+    await repository.save(ramp);
+
+    if (Array.isArray(body.imagesKeys) && body.imagesKeys.length > 0 && qr) {
+      await this.imagesService.deleteRampImages(ramp, qr);
+
+      await this.imagesService.createRampImages(ramp, body.imagesKeys, qr);
+    }
+
+    return await repository.findOne({ where: { id }, relations: ['images'] });
+  }
 
   private async paginate(
     dto: PaginateRampDto,
@@ -227,34 +247,6 @@ export class RampsService {
       : this.rampsRepository;
   }
 
-  /*private parseWhereFilter(
-    key: string,
-    value: any,
-  ): FindOptionsWhere<RampsModel> | FindOptionsOrder<RampsModel> {
-    const options: FindOptionsWhere<RampsModel> = {};
-    const split = key.split('__');
-
-    if (split.length !== 2 && split.length !== 3) {
-      throw new BadRequestException(
-        `where 필터는 '__'로 split 했을때 길이가 2 또는 3이어야합니다 - 문제되는 키값 : ${key}`,
-      );
-    }
-    if (split.length === 2) {
-      const [_, field] = split;
-      options[field] = value;
-    } else {
-      const [_, field, operator] = split;
-      options[field] = FILTER_MAPPER[operator](value);
-
-      if (operator === 'i_like') {
-        options[field] = FILTER_MAPPER[operator](`%${value}%`);
-      } else {
-        options[field] = FILTER_MAPPER[operator](value);
-      }
-    }
-
-    return options;
-  }*/
   async generateRamps(id: number) {
     for (let i = 0; i < 100; i++) {
       await this.createRamp(id, {

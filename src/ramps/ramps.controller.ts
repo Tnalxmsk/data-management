@@ -11,7 +11,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { RampsService } from './ramps.service';
-import { ImageType } from '../common/entities/image.entity';
 import { PaginateRampDto } from './dto/paginate-ramp.dto';
 import { DeleteRampDto } from './dto/delete-ramp.dto';
 import { CreateRampDto } from './dto/create-ramp.dto';
@@ -20,14 +19,7 @@ import { TransactionInterceptor } from '../common/interceptor/transaction.interc
 import { UserDecorator } from '../users/decorator/user.decorator';
 import { QueryRunnerDecorator } from '../common/decorator/query-runner.decorator';
 import { QueryRunner as QR } from 'typeorm';
-import { IsPublic } from '../common/decorator/is-public.decorator';
-import { UsersModel } from '../users/entities/users.entity';
-import {
-  ApiBasicAuth,
-  ApiBearerAuth,
-  ApiBody,
-  ApiQuery,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { ImagesService } from './image/images.service';
 
 @Controller('ramps')
@@ -73,8 +65,14 @@ export class RampsController {
 
   @Patch(':id')
   @ApiBearerAuth('authorization')
-  patchRamps(@Param('id', ParseIntPipe) id: number, body: UpdateRampDto) {
-    return this.rampsService.patchRamps(id, body);
+  @UseInterceptors(TransactionInterceptor)
+  @ApiBody({ type: UpdateRampDto })
+  patchRamps(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: UpdateRampDto,
+    @QueryRunnerDecorator() qr?: QR,
+  ) {
+    return this.rampsService.patchRamps(id, body, qr);
   }
 
   @Post('random')
